@@ -1,0 +1,19 @@
+"""
+Corresponds to the inner loop of Algorithm 2 from (Ho et al., 2020).
+"""
+
+def denoise_sample(self, x, t): # x is the random noise
+  with torch.no_grad():
+    # Equation 3
+    if t > 1:
+      z = torch.randn(x.shape)
+    else:
+      z = 0
+    # Get the predicted noise from the U-Net
+    e_hat = self.forward(x, t.view(1).repeat(x.shape[0]))
+    # Perform the denoising step to take the image from t to t-1
+    pre_scale = 1 / math.sqrt(self.alpha(t))
+    e_scale = (1 - self.alpha(t)) / math.sqrt(1 - self.alpha_bar(t))
+    post_sigma = math. sqrt(self.beta(t)) * z
+    x = pre_scale * (x - e_scale * e_hat) + post_sigma  #equation 4
+    return x
